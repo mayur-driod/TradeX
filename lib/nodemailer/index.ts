@@ -1,26 +1,44 @@
-import nodemailer from "nodemailer";
-import { WELCOME_EMAIL_TEMPLATE } from "./templates";
+import nodemailer from 'nodemailer';
+import {WELCOME_EMAIL_TEMPLATE, NEWS_SUMMARY_EMAIL_TEMPLATE} from "@/lib/nodemailer/templates";
 
-export const trasporter = nodemailer.createTransport({
-    service: "gmail",
+export const transporter = nodemailer.createTransport({
+    service: 'gmail',
     auth: {
-        user: process.env.NODEMAILER_EMAIL,
-        pass: process.env.NODEMAILER_PASSWORD,
-    },
-});
+        user: process.env.NODEMAILER_EMAIL!,
+        pass: process.env.NODEMAILER_PASSWORD!,
+    }
+})
 
-export const sendWelcomeEmail = async ({email,name,intro} : WelcomeEmailData) => {
-    const htmlTemplate =  WELCOME_EMAIL_TEMPLATE
-        .replace("{{name}}", name)
-        .replace("{{intro}}", intro);
+export const sendWelcomeEmail = async ({ email, name, intro }: WelcomeEmailData) => {
+    const htmlTemplate = WELCOME_EMAIL_TEMPLATE
+        .replace('{{name}}', name)
+        .replace('{{intro}}', intro);
 
     const mailOptions = {
-        from: `TradeX ${ process.env.NODEMAILER_EMAIL}`,
+        from: `"Signalist" <signalist@jsmastery.pro>`,
         to: email,
-        subject: "Welcome to TradeX - Your Journey to Smart Investing Begins Here!",
-        text: "Thanks for choosing TradeX! We're excited to have you on board. You now have all the tools needed for you to start your investment journey with confidence.",
+        subject: `Welcome to Signalist - your stock market toolkit is ready!`,
+        text: 'Thanks for joining Signalist',
         html: htmlTemplate,
     }
 
-    await trasporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 }
+
+export const sendNewsSummaryEmail = async (
+    { email, date, newsContent }: { email: string; date: string; newsContent: string }
+): Promise<void> => {
+    const htmlTemplate = NEWS_SUMMARY_EMAIL_TEMPLATE
+        .replace('{{date}}', date)
+        .replace('{{newsContent}}', newsContent);
+
+    const mailOptions = {
+        from: `"Signalist News" <signalist@jsmastery.pro>`,
+        to: email,
+        subject: `📈 Market News Summary Today - ${date}`,
+        text: `Today's market news summary from Signalist`,
+        html: htmlTemplate,
+    };
+
+    await transporter.sendMail(mailOptions);
+};
