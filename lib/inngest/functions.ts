@@ -59,25 +59,24 @@ export const sendDailyNewsSummary = inngest.createFunction(
 
         // Step #2: For each user, get watchlist symbols -> fetch news (fallback to general)
         const results = await step.run('fetch-user-news', async () => {
-            const perUser: Array<{ user: User; articles: MarketNewsArticle[] }> = [];
-            for (const user of users as User[]) {
+            const userPromises = (users as User[]).map(async (user) => {
                 try {
                     const symbols = await getWatchlistSymbolsByEmail(user.email);
                     let articles = await getNews(symbols);
                     // Enforce max 6 articles per user
                     articles = (articles || []).slice(0, 6);
-                    // If still empty, fallback to general
+                    // If still empty, fallback to general news is already handled in getNews
                     if (!articles || articles.length === 0) {
-                        articles = await getNews();
+                        articles = await getNews(); // This fallback might be redundant depending on getNews implementation
                         articles = (articles || []).slice(0, 6);
                     }
-                    perUser.push({ user, articles });
+                    return { user, articles };
                 } catch (e) {
                     console.error('daily-news: error preparing user news', user.email, e);
-                    perUser.push({ user, articles: [] });
+                    return { user, articles: [] };
                 }
-            }
-            return perUser;
+            });
+            const perUser = await Promise.all(userPromises);
         });
 
         // Step #3: (placeholder) Summarize news via AI
