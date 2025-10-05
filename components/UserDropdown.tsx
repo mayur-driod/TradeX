@@ -16,13 +16,17 @@ const UserDropdown = ({user} : {user:User}) => {
     const handleSignOut = async () => {
         await signOut();
         router.push('/sign-in');
-    }
+    };
+
+    const handleProfileClick = () => {
+        router.push('/profile');
+    };
 
   return (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <Button variant="ghost" className='flex items-center gap-3 text-gray-4 hover:text-yellow-500'>
-                <Avatar className='h-8 w-8'>
+                <Avatar className='h-8 w-8 cursor-pointer' onClick={handleProfileClick}>
                     <AvatarImage src="http://github.com/shadcn.png" alt="avatar" />
                     <AvatarFallback className='bg-yellow-500 text-yellow-900 text-sm font-bold'>{user.name[0]}</AvatarFallback>
                 </Avatar>
@@ -34,13 +38,23 @@ const UserDropdown = ({user} : {user:User}) => {
         <DropdownMenuContent className='text-gray-400'>
             <DropdownMenuLabel>
                 <div className='flex relative items-center gap-3 py-2'>
-                <Avatar className='h-10 w-10'>
+                <Avatar className='h-10 w-10 cursor-pointer' onClick={handleProfileClick}>
                     <AvatarImage src="http://github.com/shadcn.png" alt="avatar" />
                     <AvatarFallback className='bg-yellow-500 text-yellow-900 text-sm font-bold'>{user.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className='flex flex-col'>
-                    <span className='text-base font-medium text-gray-400'>{user.name}</span>
-                    <span className='text-sm text-gray-500'>{user.email}</span>
+                    <span
+                        className='text-base font-medium text-gray-400 cursor-pointer'
+                        onClick={handleProfileClick}
+                    >
+                        {user.name}
+                    </span>
+                    <span
+                        className='text-sm text-gray-500 cursor-pointer'
+                        onClick={handleProfileClick}
+                    >
+                        {user.email}
+                    </span>
                 </div>
             </div>
             </DropdownMenuLabel>
