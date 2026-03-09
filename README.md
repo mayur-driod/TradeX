@@ -1,6 +1,24 @@
 # TradeX
 
-TradeX is a modern web application for tracking, analyzing, and staying updated on your stock trades and market news. Built with Next.js, TypeScript, Tailwind CSS, and MongoDB, it provides a personalized dashboard, real-time alerts, and actionable insights for investors.
+## Demo
+
+
+### 🎥 Product Walkthrough
+
+<p align="center"><b>See TradeX in action</b></p>
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/5fa31172-d6de-4af0-ade5-47af52936846"
+         controls
+         width="800"
+         style="border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+  </video>
+</div>
+
+
+### 💬 LinkedIn Post
+Read the full LinkedIn post here:  
+https://www.linkedin.com/posts/mayurksetty_feeling-stuck-in-the-loop-of-monotonous-linkedin-activity-7388915601773346817-x2G7
 
 ## Features
 
