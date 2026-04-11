@@ -49,7 +49,7 @@ https://www.linkedin.com/posts/mayurksetty_feeling-stuck-in-the-loop-of-monotono
 ## Tech Stack
 
 - **Frontend:** Next.js 15, React 19, Tailwind CSS 4
-- **Backend:** Node.js, MongoDB, Mongoose
+- **Backend:** MongoDB, Mongoose
 - **Email:** Nodemailer for transactional and alert emails
 - **Charts:** TradingView widget integration
 - **Other:** TypeScript, ESLint, Framer Motion, dotenv
