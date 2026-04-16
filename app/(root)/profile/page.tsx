@@ -1,10 +1,11 @@
-import { auth } from "@/lib/better-auth/auth";
+import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import ProfileClient from "./ProfileClient";
 
 // Server Component
 const ProfilePage = async () => {
+  const auth = await getAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });
