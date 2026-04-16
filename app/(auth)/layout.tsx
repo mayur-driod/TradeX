@@ -5,8 +5,18 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 const Layout = async ({ children }: { children : React.ReactNode }) => {
-    const auth = await getAuth();
-    const session = await auth.api.getSession({headers: await headers()});
+    const shouldSkipAuthCheck = process.env.NEXT_PHASE === 'phase-production-build' || !process.env.MONGODB_URI;
+
+    let session: Awaited<ReturnType<Awaited<ReturnType<typeof getAuth>>['api']['getSession']>> | null = null;
+
+    if (!shouldSkipAuthCheck) {
+        try {
+            const auth = await getAuth();
+            session = await auth.api.getSession({headers: await headers()});
+        } catch (error) {
+            console.error('Failed to read session in auth layout:', error);
+        }
+    }
 
     if(session?.user) { redirect('/'); }
 

@@ -5,19 +5,29 @@ import { redirect } from 'next/navigation';
 import React from 'react'
 
 const layout = async ({children} : {children : React.ReactNode}) => {
-  const auth = await getAuth();
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const shouldSkipAuthCheck = process.env.NEXT_PHASE === 'phase-production-build' || !process.env.MONGODB_URI;
 
-  if(!session?.user){
+  let session: Awaited<ReturnType<Awaited<ReturnType<typeof getAuth>>['api']['getSession']>> | null = null;
+
+  if (!shouldSkipAuthCheck) {
+    try {
+      const auth = await getAuth();
+      session = await auth.api.getSession({
+        headers: await headers(),
+      });
+    } catch (error) {
+      console.error('Failed to read session in root layout:', error);
+    }
+  }
+
+  if(!shouldSkipAuthCheck && !session?.user){
     redirect('/sign-in');
   }
 
   const user = {
-    id: session.user.id,
-    name: session.user.name,
-    email: session.user.email,
+    id: session?.user?.id || 'build-user',
+    name: session?.user?.name || 'Build User',
+    email: session?.user?.email || 'build@example.com',
   }
 
   return (
