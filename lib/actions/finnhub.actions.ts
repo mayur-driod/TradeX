@@ -7,6 +7,17 @@ import { cache } from 'react';
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 const NEXT_PUBLIC_FINNHUB_API_KEY = process.env.NEXT_PUBLIC_FINNHUB_API_KEY ?? ''; 
 
+type Profile2Response = {
+  ticker?: string;
+  name?: string;
+  exchange?: string;
+};
+
+type SearchStockCandidate = {
+  result: FinnhubSearchResult;
+  exchangeFromProfile?: string;
+};
+
 async function fetchJSON<T>(url: string, revalidateSeconds?: number): Promise<T> {
   const options: RequestInit & { next?: { revalidate?: number } } = revalidateSeconds
     ? { cache: 'force-cache', next: { revalidate: revalidateSeconds } }
@@ -109,7 +120,7 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
 
     const trimmed = typeof query === 'string' ? query.trim() : '';
 
-    let results: FinnhubSearchResult[] = [];
+    let results: SearchStockCandidate[] = [];
 
     if (!trimmed) {
       // Fetch top 10 popular symbols' profiles
@@ -119,46 +130,45 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
           try {
             const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
             // Revalidate every hour
-            const profile = await fetchJSON<any>(url, 3600);
-            return { sym, profile } as { sym: string; profile: any };
+            const profile = await fetchJSON<Profile2Response>(url, 3600);
+            return { sym, profile } as { sym: string; profile: Profile2Response | null };
           } catch (e) {
             console.error('Error fetching profile2 for', sym, e);
-            return { sym, profile: null } as { sym: string; profile: any };
+            return { sym, profile: null } as { sym: string; profile: Profile2Response | null };
           }
         })
       );
 
-      results = profiles
-        .map(({ sym, profile }) => {
-          const symbol = sym.toUpperCase();
-          const name: string | undefined = profile?.name || profile?.ticker || undefined;
-          const exchange: string | undefined = profile?.exchange || undefined;
-          if (!name) return undefined;
-          const r: FinnhubSearchResult = {
-            symbol,
-            description: name,
-            displaySymbol: symbol,
-            type: 'Common Stock',
-          };
-          // We don't include exchange in FinnhubSearchResult type, so carry via mapping later using profile
-          // To keep pipeline simple, attach exchange via closure map stage
-          // We'll reconstruct exchange when mapping to final type
-          (r as any).__exchange = exchange; // internal only
-          return r;
-        })
-        .filter((x): x is FinnhubSearchResult => Boolean(x));
+      results = profiles.reduce<SearchStockCandidate[]>((acc, { sym, profile }) => {
+        const symbol = sym.toUpperCase();
+        const name: string | undefined = profile?.name || profile?.ticker || undefined;
+        const exchange: string | undefined = profile?.exchange || undefined;
+
+        if (!name) {
+          return acc;
+        }
+
+        const result: FinnhubSearchResult = {
+          symbol,
+          description: name,
+          displaySymbol: symbol,
+          type: 'Common Stock',
+        };
+
+        acc.push({ result, exchangeFromProfile: exchange });
+        return acc;
+      }, []);
     } else {
       const url = `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(trimmed)}&token=${token}`;
       const data = await fetchJSON<FinnhubSearchResponse>(url, 1800);
-      results = Array.isArray(data?.result) ? data.result : [];
+      results = (Array.isArray(data?.result) ? data.result : []).map((result) => ({ result }));
     }
 
     const mapped: StockWithWatchlistStatus[] = results
-      .map((r) => {
+      .map(({ result: r, exchangeFromProfile }) => {
         const upper = (r.symbol || '').toUpperCase();
         const name = r.description || upper;
         const exchangeFromDisplay = (r.displaySymbol as string | undefined) || undefined;
-        const exchangeFromProfile = (r as any).__exchange as string | undefined;
         const exchange = exchangeFromDisplay || exchangeFromProfile || 'US';
         const type = r.type || 'Stock';
         const item: StockWithWatchlistStatus = {

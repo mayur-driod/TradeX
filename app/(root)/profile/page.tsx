@@ -14,7 +14,7 @@ const ProfilePage = async () => {
     name: session.user.name,
     email: session.user.email,
     image: session.user.image || "",
-    bio: session.user.bio || "",
+    bio: "",
   };
 
   return <ProfileClient user={user} />;
