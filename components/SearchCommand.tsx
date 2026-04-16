@@ -8,7 +8,7 @@ import Link from "next/link";
 import {searchStocks} from "@/lib/actions/finnhub.actions";
 import {useDebounce} from "@/hooks/useDebounce";
 
-export default function SearchCommand({ renderAs = 'button', label = 'Add stock', initialStocks }: SearchCommandProps) {
+export default function SearchCommand({ renderAs = 'button', label = 'Add stock', initialStocks = [] }: SearchCommandProps) {
   const [open, setOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(false)
@@ -46,7 +46,7 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
 
   useEffect(() => {
     debouncedSearch();
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearch]);
 
   const handleSelectStock = () => {
     setOpen(false);
@@ -83,7 +83,7 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
                 {isSearchMode ? 'Search results' : 'Popular stocks'}
                 {` `}({displayStocks?.length || 0})
               </div>
-              {displayStocks?.map((stock, i) => (
+              {displayStocks?.map((stock) => (
                   <li key={stock.symbol} className="search-item">
                     <Link
                         href={`/stocks/${stock.symbol}`}
