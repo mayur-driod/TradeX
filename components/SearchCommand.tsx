@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { CommandDialog, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command"
 import {Button} from "@/components/ui/button";
 import {Loader2,  TrendingUp} from "lucide-react";
@@ -28,19 +28,22 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
 
-  const handleSearch = async () => {
-    if(!isSearchMode) return setStocks(initialStocks);
+  const handleSearch = useCallback(async () => {
+    if (!isSearchMode) {
+      setStocks(initialStocks);
+      return;
+    }
 
     setLoading(true)
     try {
-        const results = await searchStocks(searchTerm.trim());
-        setStocks(results);
+      const results = await searchStocks(searchTerm.trim());
+      setStocks(results);
     } catch {
       setStocks([])
     } finally {
       setLoading(false)
     }
-  }
+  }, [initialStocks, isSearchMode, searchTerm]);
 
   const debouncedSearch = useDebounce(handleSearch, 300);
 
